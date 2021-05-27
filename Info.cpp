@@ -185,10 +185,22 @@ int main(){
         int i = 1;
 
         while(number_t--){
-                double inp;
+                string inp;
+                double ans = 0;
+                double leftdigit =0;
                 cout<<"Please enter your input "<<i<<" : ";
                 cin>>inp;
-                xxx.push_back(inp);
+                for(int i = 0 ; i < inp.size() ; i++){
+                        if(isdigit(inp[i])){
+                               ans = 10*ans + (inp[i] - '0');
+                        }
+                        else {
+                                leftdigit = ans;
+                                ans = 0;
+                        }
+                }
+                ans = double(leftdigit) / ans;
+                xxx.push_back(ans);
                 i++;
         }
 

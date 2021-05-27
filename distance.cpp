@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <algorithm>
 using namespace std;
 vector<int> draw_map(8,1);
 vector<vector<vector<double>>> cluster;
@@ -265,8 +266,139 @@ void group_distance(vector<vector<double>>& matrix){
 
 
 }
- 
+vector<int> mean(int x1, int y1, int x2, int y2, int previous_n){
+        float new_x = float(x1*previous_n + x2) / (float(previous_n + 1));
+        float new_y = float(y1*previous_n + y2) / (float(previous_n + 1));
+        vector<int> temp;
+        temp.push_back(new_x);
+        temp.push_back(new_y);
+        return temp;
+}
+float tan_func(float net){
+        return ((exp(net*2) - 1) / (exp(net*2) + 1));
+}
+float sigmoid_func(float net){
+        return (1 / (exp(-1*net) + 1));
+}
+float rectifier_func(float net){
+        if(net >= 0){
+                return net;
+        }
+        return 0;
+}
+float threshold_func(float net){
+        if(net >= 0){
+                return 1;
+        }
+        return 0;
+}
+void neural_network(vector<vector<double>> matrix, char ActFunc, double ini_w1, double ini_w2, double ini_b, double learning_rate){
+        int iteration = matrix.size();
+        int i = 0;
+        vector<double> y;
+        while(iteration--){
+        double yy;
+        cout<<"please input y values :"<<endl;
+        cin>>yy;
+        y.push_back(yy);
+        }
+        iteration = matrix.size();
+        while(iteration--){
+                double net = ini_w1*matrix[i][0] + ini_w2*matrix[i][1] + ini_b;
+                cout<<"net = "<<ini_w1<<" * "<<matrix[i][0]<<" + "<<ini_w2<<" * "<<matrix[i][1]<<" + "<<ini_b<< " = "<<net<<endl;
+                float d = (exp(net*2) - 1) / (exp(net*2) + 1);
+                if(ActFunc == 't'){
+                        d = tan_func(net);
+                }
+                else if(ActFunc == 's'){
+                        d = sigmoid_func(net);
+                }
+                else if(ActFunc == 'r'){
+                        d = rectifier_func(net);
+                }
+                else if(ActFunc == 'h'){
+                        d = threshold_func(net);
+                }
+                float a = ini_w1 +  learning_rate * (y[i] - d) * matrix[i][0];
+                float b = ini_w2 +  learning_rate * (y[i] - d) * matrix[i][1];
+                float c = ini_b +  learning_rate * (y[i] - d);
+                cout<<"w1 = "<<ini_w1<<" + "<<learning_rate<<" * "<<"("<<y[i]<<" - "<<d<<") * "<<matrix[i][0]<<" = "<<a<<endl;
+                cout<<"w2 = "<<ini_w2<<" + "<<learning_rate<<" * "<<"("<<y[i]<<" - "<<d<<") * "<<matrix[i][1]<<" = "<<b<<endl;
+                cout<<"b = "<<ini_b<<" + "<<learning_rate<<" * "<<"("<<y[i]<<" - "<<d<<") = "<<c<<endl;
+                ini_w1 = ini_w1 +  learning_rate * (y[i] - d) * matrix[i][0];
+                ini_w2 = ini_w2 +  learning_rate * (y[i] - d) * matrix[i][1];
+                ini_b = ini_b +  learning_rate * (y[i] - d);
+                cout<<"So in iteration "<<i+1<< " w1 = "<<ini_w1<<", w2 = "<<ini_w2<<", b = "<<ini_b<<endl;
+                i++;
+        }
+}
+void FP_tree(int threshold){
+        map<char, int> count_char;
+        vector<vector<char>> items;
+        int n = 0;
 
+        while(n != 27){
+                char x = 'a' + n;
+                count_char[x] = 0;
+                n++;
+        }       
+
+        char x = 'a';
+        n = 0;
+
+        while(x != '/'){
+                cout<<"please enter "<< n+1<<"th charater"<<endl;
+                cin>>x;
+                count_char[x] += 1 ;
+                n++;
+        }
+        n = 0;
+
+        while(n != 27){
+        char x = 'a' + n;
+        if(count_char[x] >= threshold){
+                cout<<"The number of "<<x<<" "<<count_char[x]<<endl;
+        }
+        n++;
+        }
+
+        cout<<"Please enter Tid"<<endl;
+        int Tid;
+        int i = 0;
+        cin>>Tid;
+
+        while(Tid){
+                char x = 'a';
+                vector<char> temp;
+                while(x != '/'){
+                        cout<<"Please enter items for Tid "<<i+1<<endl;
+                        cin>>x;
+                        if( x!='/' && count_char[x] >= threshold){
+                                temp.push_back(x);
+                        }
+                }
+                for(int i = 0; i < temp.size(); i++){
+                        for(int j =0; j< temp.size();j++){
+                                if(count_char[temp[i]]> count_char[temp[j]]){
+                                      char y =  temp[i];
+                                      temp[i] = temp[j];
+                                      temp[j] = y;
+                                }
+                        }
+                }
+                
+                items.push_back(temp);
+                i++;
+        Tid--;
+        }
+        for(int i = 0; i < items.size(); i++){
+                cout<<"For transaction ID "<<i+1<<" ";
+                for(int j = 0; j < items[i].size(); j++){
+                       cout<<items[i][j]<<" ";
+        }
+        cout<<endl;
+        }
+}
 int main(){
 
         vector<vector<double>> matrix;
@@ -300,9 +432,55 @@ int main(){
            group_distance(matrix);
         }
         if(choice == 'd'){
-            cout<<"distance between those two points :"<<pure_distance(matrix[0][0], matrix[0][1], matrix[1][0], matrix[1][1]);
-        
+                int i = 0;
+                int j = 0;
+                for(int i = 0; i < matrix.size(); i++){
+                        for(int j = i+1; j < matrix.size(); j++){
+                                cout<<"distance between(x"<<i+1<<", y" <<i+1 <<"), (x"<<j+1<<","<<"y"<<j+1<<")"
+                                << ":"<<pure_distance(matrix[i][0], matrix[i][1], matrix[j][0], matrix[j][1])<<endl;
+                        }
+                }
         }
-        
-        
+        if(choice == 'e'){
+                int i = 0;
+                int j = 0;
+                int n = 1;
+                vector<int> temp;
+                for(int i = 0; i < matrix.size(); i++){
+                        for(int j = i+1; j < matrix.size(); j++){
+                                cout<<"mean coordinate (x"<<i+1<<", y" <<i+1 <<"), (x"<<j+1<<","<<"y"<<j+1<<")"
+                                << ":"<<mean(matrix[i][0], matrix[i][1], matrix[j][0], matrix[j][1], n)[0]<<","<<mean(matrix[i][0], matrix[i][1], matrix[j][0], matrix[j][1], n)[1]
+                                <<endl;
+                        }
+                }
+        }
+        if(choice == 'n'){
+                // activation function, w1, w2, b, learning rate
+                // tan_func = t sigmoid = s , threshold = h 
+                neural_network(matrix,'s',0.1,0.1,0.1,0.5);
+   
+        }
+        if (choice == 'p'){
+                double mean_y = 0;
+                double mean_x = 0;
+                for(int i = 0; i < matrix.size(); i++){
+                                mean_y += matrix[i][1];
+                                mean_x += matrix[i][0];
+                }
+                 mean_y = double(mean_y) / double(matrix.size());
+                 mean_x = double(mean_x) / double(matrix.size());
+                 cout<<"mean coordinate :("<<mean_x<<", "<<mean_y<<")"<<endl;
+                for(int i = 0; i < matrix.size(); i++){
+                        double ty = matrix[i][1] - mean_y;
+                        double tx = matrix[i][0] - mean_x;
+                        cout<<"difference between mean and x"<<i+1<< " coordinate = ("<<tx<<", "<<ty<<")"<<endl;
+                }
+        }
+
+        if(choice == 'f'){
+                int x;
+                cout<<"please input threshold : "<<endl;
+                cin>>x;
+                FP_tree(x);
+        }
 }
