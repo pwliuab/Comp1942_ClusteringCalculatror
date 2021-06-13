@@ -1,3 +1,5 @@
+<h1 align="center">Comp1942 Calculator</h1>
+
 # Environment
 > Visual studio or run it by typing gpp comment
 # Comp1942 Coding using C++
