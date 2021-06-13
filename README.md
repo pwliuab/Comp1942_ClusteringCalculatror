@@ -1,3 +1,5 @@
+# Environment
+> Visual studio or run it by typing gpp comment
 # Comp1942 Coding using C++
 > Although this course does not requrie us coding
 > 
